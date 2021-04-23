@@ -19,13 +19,13 @@ $local_save_dir='~\Documents\KINGDOM HEARTS HD 1.5+2.5 ReMIX\Epic Games Store\0d
 $save_backups='SaveBackup'
 $local_save_backup_dir="$local_save_dir\$save_backups"
 
-_cloud_sync_file($save_file){
+Function _cloud_sync($save_file){
     # Derive some handles so we don't need to do these over and over
-    $folder_name = $save_file.TrimEnd(".png")
-    $save_basename = $folder_name
-    $save_folder_cloud = $cloud_save_dir/$folder_name
-    $local_save = $local_save_dir/$save_file
-    $local_backup_folder = $local_save_dir/$save_backups/$folder_name
+    $folder_name = $save_file.TrimEnd('.png')
+    $save_basename = "$folder_name"
+    $save_folder_cloud = "$cloud_save_dir/$folder_name"
+    $local_save = "$local_save_dir/$save_file"
+    $local_backup_folder = "$local_save_dir/$save_backups/$folder_name"
 
     # Say what we are doing in the launcher output
     Write-Output "Starting cloud sync"
@@ -65,25 +65,30 @@ _cloud_sync_file($save_file){
         # If the local backup folder is missing
         if ( -not(Test-Path -Path $local_backup_folder -PathType Container) ) {
             # Make it
-            Write-Output "Making local save backup folder: $local_save_backup_folder"
-            New-Item -ItemType Directory -Path $local_backup_folder
+            Write-Output "Making local save backup folder: $local_backup_folder"
+            Write-Output "New-Item -ItemType Directory -Path $local_backup_folder"
+            #New-Item -ItemType Directory -Path $local_backup_folder
         }
+        Write-Output "Move-Item -Path $local_save -Destination $local_backup_folder/$save_basename-$local_save_ts.png"
+        Write-Output "Copy-Item $save_folder_cloud/$newest_cloud -Destination $local_save"
         # Move the current local save to the backup and date stamp it
-        Move-Item -Path "$local_save" -Destination "$local_backup_folder/$save_basename-$local_save_ts.png"
+        #Move-Item -Path "$local_save" -Destination "$local_backup_folder/$save_basename-$local_save_ts.png"
         # Copy the newest cloud save to the local save slot
-        Copy-Item "$save_folder_cloud/$newest_cloud" -Destination "$local_save"
+        #Copy-Item "$save_folder_cloud/$newest_cloud" -Destination "$local_save"
     }
     # If the local save is newer than the cloud
     elseif ( $local_save_ts -gt $newest_cloud_ts ) {
         # Check first if the save file's folder exists in the cloud, and make it if it's missing
         if ( -not(Test-Path -Path $save_folder_cloud -PathType Container) ) {
             # Make the missing game save folder in the cloud organizer folder
-            New-Item -ItemType Directory -Path $cloud_save_dir -Name $folder_name
+            Write-Output "New-Item -ItemType Directory -Path $save_folder_cloud"
+            #New-Item -ItemType Directory -Path $save_folder_cloud -Name $folder_name
         }
 
         # Copy the local save file to the cloud folder and date-stamp it
         Write-Output "Local is newer than cloud ($local_save_ts > $newest_cloud_ts) - Copying local to cloud"
-        Copy-Item "$local_save" -Destination "$save_folder_cloud/$save_basename-$local_save_ts.png"
+        Write-Output "Copy-Item $local_save -Destination $save_folder_cloud/$save_basename-$local_save_ts.png"
+        #Copy-Item "$local_save" -Destination "$save_folder_cloud/$save_basename-$local_save_ts.png"
     }
     # If the local and cloud files hae the same datestamp
     elseif ( $local_save_ts -eq $newest_cloud_ts) {
@@ -124,21 +129,27 @@ Function _launch_game {
     Write-Output " $epic_app has exited - Checking if there's a new save to sync"
 }
 
-# Test that all the paths needed for cloud syncing are present
+## Test that all the paths needed for cloud syncing are present
 _test_cloud_sync_paths
+
+## Sync up before launching the game
 if ( $cloud_test -eq 'pass' ) {
     # If so - do a cloud sync before starting the game
     foreach ($_save in @($KHFM_save_file, $KHCoM_save_file) ) {
-        _cloud_sync_file $_save
+        _cloud_sync $_save
     }
 } else { Write-Output "Cloud Test failed - skiping cloud sync" }
-# Start the game
-_launch_game
-# After the game exits - run the sync again (no need to re-check paths)
+
+## Start the game
+#_launch_game
+
+## After the game exits - run the sync again (no need to re-check paths)
 if ( $cloud_test -eq 'pass' ) {
     foreach ($_save in @($KHFM_save_file, $KHCoM_save_file) ) {
-        _cloud_sync_file $_save
+        _cloud_sync $_save
     }
 } else { Write-Output "Cloud Test failed - skiping cloud sync" }
+
+## Pause to let user see what happened
 Write-Output "Closing in 2 seconds"
 Start-Sleep -Seconds 2
