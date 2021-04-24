@@ -162,7 +162,7 @@ if ( $cloud_test -eq 'pass' ) {
 } else { Write-Output "Cloud Test failed - skiping cloud sync" }
 
 ## Start the game
-#_launch_game
+_launch_game
 
 ## After the game exits - run the sync again (no need to re-check paths)
 if ( $cloud_test -eq 'pass' ) {
