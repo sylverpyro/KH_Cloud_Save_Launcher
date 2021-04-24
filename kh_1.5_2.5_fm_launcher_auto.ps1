@@ -9,7 +9,7 @@ $epic_app='KINGDOM HEARTS HD 1.5+2.5 ReMIX'
 $epic_app_launch_uri='com.epicgames.launcher://apps/68c214c58f694ae88c2dab6f209b43e4?action=launch&silent=true'
 # The name of the save files
 $KHFM_save_file='KHFM.png'
-$KHCoM_save_file='KHCoM.png'
+$KHCoM_save_file='KHReCoM.png'
 
 # Location of the 'local save' folder
 # NOTE: This is NEVER variable as this is where KH is designed to make it's save files
@@ -19,34 +19,38 @@ $local_save_dir='~\Documents\KINGDOM HEARTS HD 1.5+2.5 ReMIX\Epic Games Store\0d
 $save_backups='SaveBackup'
 $local_save_backup_dir="$local_save_dir\$save_backups"
 
-Function _cloud_sync($save_file){
+Function _cloud_sync($save_file) {
     # Derive some handles so we don't need to do these over and over
     $folder_name = $save_file.TrimEnd('.png')
     $save_basename = "$folder_name"
-    $save_folder_cloud = "$cloud_save_dir/$folder_name"
-    $local_save = "$local_save_dir/$save_file"
-    $local_backup_folder = "$local_save_dir/$save_backups/$folder_name"
-
-    # Say what we are doing in the launcher output
-    Write-Output "Starting cloud sync"
+    $save_folder_cloud = "$cloud_save_dir\$folder_name"
+    $local_save = "$local_save_dir\$save_file"
+    $local_backup_folder = "$local_save_backup_dir\$folder_name"
 
     ## Get the time stamp of the newest cloud save
     # Check if the save folder exists on the cloud
     if ( Test-Path -Path $save_folder_cloud -PathType Container) {
             # If it does, find newest cloud save
+            #Write-Output "Get-ChildItem $save_folder_cloud | Sort-Object -Descending LastWriteTime | Select-Object -First 1"
             $newest_cloud = Get-ChildItem $save_folder_cloud | Sort-Object -Descending LastWriteTime | Select-Object -First 1
-            # Otherwise just set the newest_cloud to '' (empty)
-    } else { $newest_cloud = '' }
+    } 
+
+    #Write-Output "Got item: '$newest_cloud'"
+    #if ( $null -eq $newest_cloud ) { Write-Output " '$newest_cloud' is empty"}
+
     # If there are no cloud saves yet (Folder does not exists OR exists but no items are in it)
-    if ( $newest_cloud -eq '' ) {
+    if ( $null -eq $newest_cloud ) {
         # Set the cloud save TS to 0 so the local save always wins
+        #Write-Output "  DEBUG: No save file in cloud folder - setting time stamp to 0"
         $newest_cloud_ts = '0'
     } else {
         # Otherwise get the TS off the newest cloud save
         # NOTE: Get-ChildItem returns just the NAME, so the DIR needs to be added back in
+        #Write-Output "Get-Date ( (Get-ItemProperty -Path $save_folder_cloud\$newest_cloud).lastWriteTime ) -UFormat %Y%m%d.%H%M"
         $newest_cloud_ts = Get-Date ( (Get-ItemProperty -Path $save_folder_cloud\$newest_cloud).lastWriteTime ) -UFormat %Y%m%d.%H%M
     }
 
+    #Write-Output "Got cloud ts: $newest_cloud_ts"
     ## Get the time stamp off the local save file
     # If the save file exists
     if ( Test-Path -Path $local_save -PathType Leaf ) {
@@ -57,44 +61,61 @@ Function _cloud_sync($save_file){
         # set the local save TS to '0' so the cloud save will always be newer
         $local_save_ts = '0'
     }
-
+    
+    if ( -not($newest_cloud_ts -eq 0 -and $local_save_ts -eq 0 ) ) {
+        Write-Output "Starting cloud sync of $save_file"
+    }
+    if ( $newest_cloud_ts -eq 0 -and $local_save_ts -eq 0 ) {
+        # Say and do nothing to do as the savefile doesn't exist
+    } 
     ## Now that all the timestamps have been derived - Figure out which is newer
-    if ( $newest_cloud_ts -gt $local_save_ts ) {
-        Write-Output "Cloud is newer than local ($newest_cloud_ts > $local_save_ts) - Backing up local and copying down cloud save"
-        
-        # If the local backup folder is missing
-        if ( -not(Test-Path -Path $local_backup_folder -PathType Container) ) {
-            # Make it
-            Write-Output "Making local save backup folder: $local_backup_folder"
-            Write-Output "New-Item -ItemType Directory -Path $local_backup_folder"
-            #New-Item -ItemType Directory -Path $local_backup_folder
+    elseif ( $newest_cloud_ts -gt $local_save_ts ) {
+        Write-Output "  Cloud is newer than local ($newest_cloud_ts > $local_save_ts)"
+        # Check if there's a local save at all to backup
+        if ($local_save_ts -gt 0) {
+            # If there is a local save - back it up
+            Write-Output "  Backing up local save"
+
+            # If the local backup folder is missing
+            if ( -not(Test-Path -Path $local_backup_folder -PathType Container) ) {
+                # Make it
+                Write-Output "  Making local save backup folder: $local_backup_folder"
+                #Write-Output "  DBUG: New-Item -ItemType Directory -Path $local_backup_folder"
+                New-Item -ItemType Directory -Path $local_backup_folder
+            }
+
+            # Move the current local save to the backup and date stamp it
+            Write-Output "  Backing up local $save_file"
+            #Write-Output "  DEBUG: Move-Item -Path $local_save -Destination $local_backup_folder/$save_basename-$local_save_ts.png"
+            Move-Item -Path "$local_save" -Destination "$local_backup_folder/$save_basename-$local_save_ts.png"
         }
-        Write-Output "Move-Item -Path $local_save -Destination $local_backup_folder/$save_basename-$local_save_ts.png"
-        Write-Output "Copy-Item $save_folder_cloud/$newest_cloud -Destination $local_save"
-        # Move the current local save to the backup and date stamp it
-        #Move-Item -Path "$local_save" -Destination "$local_backup_folder/$save_basename-$local_save_ts.png"
+        
         # Copy the newest cloud save to the local save slot
-        #Copy-Item "$save_folder_cloud/$newest_cloud" -Destination "$local_save"
+        Write-Output "  Copying down cloud save of $save_file"
+        #Write-Output "  DEBUG: Copy-Item $save_folder_cloud/$newest_cloud -Destination $local_save"
+        Copy-Item "$save_folder_cloud/$newest_cloud" -Destination "$local_save"
     }
     # If the local save is newer than the cloud
     elseif ( $local_save_ts -gt $newest_cloud_ts ) {
+
         # Check first if the save file's folder exists in the cloud, and make it if it's missing
         if ( -not(Test-Path -Path $save_folder_cloud -PathType Container) ) {
             # Make the missing game save folder in the cloud organizer folder
-            Write-Output "New-Item -ItemType Directory -Path $save_folder_cloud"
-            #New-Item -ItemType Directory -Path $save_folder_cloud -Name $folder_name
+            #Write-Output "New-Item -ItemType Directory -Path $save_folder_cloud"
+            New-Item -ItemType Directory -Path $save_folder_cloud -Name $folder_name
         }
 
         # Copy the local save file to the cloud folder and date-stamp it
-        Write-Output "Local is newer than cloud ($local_save_ts > $newest_cloud_ts) - Copying local to cloud"
-        Write-Output "Copy-Item $local_save -Destination $save_folder_cloud/$save_basename-$local_save_ts.png"
-        #Copy-Item "$local_save" -Destination "$save_folder_cloud/$save_basename-$local_save_ts.png"
+        Write-Output "  Local is newer than cloud ($local_save_ts > $newest_cloud_ts) - Copying local to cloud"
+        #Write-Output "Copy-Item $local_save -Destination $save_folder_cloud/$save_basename-$local_save_ts.png"
+        Copy-Item "$local_save" -Destination "$save_folder_cloud/$save_basename-$local_save_ts.png"
     }
     # If the local and cloud files hae the same datestamp
     elseif ( $local_save_ts -eq $newest_cloud_ts) {
-        # Do nothing
-        Write-Output "Local is the same as cloud - nothing to do"
+        # Say and do nothing
+        Write-Output "  Local is the same as cloud - nothing to do"
     }
+    Write-Output ""
 
 }
 
