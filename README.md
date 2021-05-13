@@ -25,8 +25,10 @@ Docs to come
 ## Limitations
 
     - You'll need to enable script execution rights for you local user to use this tool
-    - Currenlty this is only written to sync KHFM.png (the Kingdom Hearts save file)
-        - Support for additional save files coming soon
+    - Currenlty this is only written to sync:
+      - KHFM.png (the Kingdom Hearts save file)
+      - KHCoM.png (Chain of Memories)
+      - Support for additional save files coming soon
     - Needs a cloud sync location on the local PC backed by a cloud service (e.g. Dropbox, Google Backup & Sync, ect.)
     - Both the cloud and local backups are _not_ managed (i.e. they are never pruned)
         - May eventually be fixed, but unless you end up with 100 syncs, the storage is (relatively) small
