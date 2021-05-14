@@ -124,16 +124,20 @@ Function _test_cloud_sync_paths {
     if ( Test-Path -Path $cloud_save_dir -PathType Container ) {
         # Nothing to do
     } else {
-        Write-Output "WARNING: Could not find Cloud save file location $cloud_save_dir"
-        Write-Output "  Skipping cloud sync"
+        Write-Output "ERROR: Could not find Cloud save file location $cloud_save_dir"
+        Write-Output "  Ensure that you've crated the KH save folder path in your cloud folder"
+        Write-Output "  If your cloud folder is not in default location, modify 'cloud_save_dir' in this script to match"
+        exit 1
         $script:cloud_test='fail'
     }
 
     if ( Test-Path -Path $local_save_dir -PathType Container ) {
         # Nothing to do
     } else {
-        Write-Output "WARNING: Could not find Local save file location $local_save_dir"
-        Write-Output "  Skipping cloud sync"
+        Write-Output "ERROR: Could not find Local save file location $local_save_dir"
+        Write-Output "  If you have never run the game on this system before: Launch the game and exit"
+        Write-Output "  to initialize the save folder then re-run though this launcher."
+        exit 1
         $script:cloud_test='fail'
     }
 }
