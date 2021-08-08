@@ -1,6 +1,9 @@
 # Location of the 'cloud save' folder
 # NOTE: This CAN be variable so will need to expand to a detection selector/User settable
-$cloud_save_dir='~\Google Drive\Cloud Saves\Kingdom Hearts 1.5+2.5 ReMix'
+## This is the legacy Google Backup And Sync type pathing
+#$cloud_save_dir='~\Google Drive\Cloud Saves\Kingdom Hearts 1.5+2.5 ReMix'
+## This is the NEW Google Drive pathing which uses a real drive letter for cloud access
+$cloud_save_dir='G:\My Drive\Cloud Saves\Kingdom Hearts 1.5+2.5 ReMix'
 
 ## These are all constants that never change
 # The name of the application (when launched)
