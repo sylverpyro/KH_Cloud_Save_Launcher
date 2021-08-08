@@ -11,6 +11,7 @@ $epic_app_launch_uri='com.epicgames.launcher://apps/68c214c58f694ae88c2dab6f209b
 $KHFM_save_file='KHFM.png'
 $KHCoM_save_file='KHReCoM.png'
 $KHIIFM_save_file='KHIIFM.png'
+$KHBbSFM_save_file='KHBbSFM.png'
 
 # Location of the 'local save' folder
 # NOTE: This is NEVER variable as this is where KH is designed to make it's save files
@@ -161,7 +162,7 @@ _test_cloud_sync_paths
 ## Sync up before launching the game
 if ( $cloud_test -eq 'pass' ) {
     # If so - do a cloud sync before starting the game
-    foreach ($_save in @($KHFM_save_file, $KHCoM_save_file, $KHIIFM_save_file) ) {
+    foreach ($_save in @($KHFM_save_file, $KHCoM_save_file, $KHIIFM_save_file, $KHBbSFM_save_file) ) {
         _cloud_sync $_save
     }
 } else { Write-Output "Cloud Test failed - skiping cloud sync" }
@@ -171,7 +172,7 @@ _launch_game
 
 ## After the game exits - run the sync again (no need to re-check paths)
 if ( $cloud_test -eq 'pass' ) {
-    foreach ($_save in @($KHFM_save_file, $KHCoM_save_file, $KHIIFM_save_file) ) {
+    foreach ($_save in @($KHFM_save_file, $KHCoM_save_file, $KHIIFM_save_file, $KHBbSFM_save_file) ) {
         _cloud_sync $_save
     }
 } else { Write-Output "Cloud Test failed - skiping cloud sync" }
