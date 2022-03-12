@@ -8,9 +8,10 @@ $cloud_save_dir='G:\My Drive\Cloud Saves\Kingdom Hearts 2.8 Final Chapter Prolog
 ## These are all constants that never change
 # The name of the application (when launched)
 #  Get this from Task Manager or PowerSHell
-$epic_app='KINGDOM HEARTS HD 2.8 FINAL CHAPTER PROLOGUE'
+$epic_app='KINGDOM HEARTS HD 2.8 Final Chapter Prologue'
 # Full launcher URI com.epicgames.launcher://apps/68c214c58f694ae88c2dab6f209b43e4?action=launch&silent=true
-$epic_app_launch_uri='com.epicgames.launcher://apps/68c214c58f694ae88c2dab6f209b43e4?action=launch&silent=true'
+## Get this by looking at a desktop shortcut that EpicGames makes for the launcher
+$epic_app_launch_uri='com.epicgames.launcher://apps/c8ff067c1c984cd7ab1998e8a9afc8b6%3Aaa743b9f52e84930b0ba1b701951e927%3Ad1a8f7c478d4439b8c60a5808715dc05?action=launch&silent=true'
 # The name of the save files
 #$KHFM_save_file='KHFM.png'
 #$KHCoM_save_file='KHReCoM.png'
@@ -19,7 +20,7 @@ $epic_app_launch_uri='com.epicgames.launcher://apps/68c214c58f694ae88c2dab6f209b
 
 # Location of the 'local save' folder
 # NOTE: This is NEVER variable as this is where KH is designed to make it's save files
-$local_save_dir='~\Documents\KINGDOM HEARTS HD 2.8 FINAL CHAPTER PROLOGUE\Epic Games Store\0d8153b07f0043778a5d3fc0a6f6f6c7'
+$local_save_dir='~\Documents\KINGDOM HEARTS HD 2.8 Final Chapter Prologue\Epic Games Store\0d8153b07f0043778a5d3fc0a6f6f6c7'
 
 # Name of the 'backup' folder used in each location
 $save_backups='SaveBackup'
